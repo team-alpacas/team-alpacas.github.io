@@ -8,18 +8,8 @@
         ],
         "paths": [
           "*"
-        ],
-        "components": [
-          {
-            "/": "/*"
-          }
         ]
       }
-    ]
-  },
-  "webcredentials": {
-    "apps": [
-      "XA46B46XZP.xyz.alpacapeep.santa"
     ]
   }
 }
