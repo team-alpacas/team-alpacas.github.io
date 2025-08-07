@@ -1,1 +1,216 @@
-Hello World
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>앱 다운로드</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #8EB757 0%, #B6DB7F 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: #FCFFF6;
+            border-radius: 20px;
+            padding: 40px 30px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(142, 183, 87, 0.15);
+            max-width: 400px;
+            width: 100%;
+            border: 1px solid #F1FFCE;
+        }
+
+        .app-icon {
+            width: 100px;
+            height: 100px;
+            border-radius: 20px;
+            margin: 0 auto 20px;
+            box-shadow: 0 10px 30px rgba(142, 183, 87, 0.3);
+            display: block;
+        }
+
+        h1 {
+            color: #333;
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 16px;
+            margin-bottom: 30px;
+            line-height: 1.5;
+        }
+
+        .download-btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #8EB757 0%, #B6DB7F 100%);
+            color: white;
+            text-decoration: none;
+            padding: 16px 40px;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(142, 183, 87, 0.4);
+            margin-bottom: 10px;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(142, 183, 87, 0.6);
+        }
+
+
+
+        .fallback-text {
+            color: #888;
+            font-size: 12px;
+            margin-top: 10px;
+            padding-top: 20px;
+            border-top: 1px solid #F1FFCE;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 30px 20px;
+                margin: 10px;
+            }
+        }
+
+        /* 로딩 애니메이션 */
+        .loading {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .spinner {
+            border: 3px solid #F1FFCE;
+            border-top: 3px solid #8EB757;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img src="icon.png" alt="앱 아이콘" class="app-icon" onerror="this.style.display='none'">
+        <h1>Peep!</h1>
+        <p class="subtitle">선택으로 마음을 전하는 새로운 메신저</p>
+        
+        <a href="#" id="primaryBtn" class="download-btn">열기</a>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p style="margin-top: 10px; color: #666;">앱을 찾고 있습니다...</p>
+        </div>
+        
+        <p class="fallback-text">
+            앱이 설치되어 있지 않으면 자동으로 스토어로 이동합니다.
+        </p>
+    </div>
+
+    <script>
+        // 딥링크 및 앱 스토어 리디렉션 로직
+        const primaryBtn = document.getElementById('primaryBtn');
+        const loading = document.getElementById('loading');
+
+        // 사용자 디바이스 감지
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+        const isAndroid = /Android/.test(navigator.userAgent);
+
+        // Universal Link / App Link 설정 (실제 앱에 맞게 수정 필요)
+        const UNIVERSAL_LINK = 'https://bridge.alpacapeep.xyz'; // iOS Universal Link
+        const APP_LINK = 'https://link.alpacapeep.xyz'; // Android App Link
+        const IOS_APP_ID = '6742237463';
+        const ANDROID_PACKAGE = 'xyz.alpacapeep.santa';
+
+        // 기본 버튼 클릭 이벤트
+        primaryBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            attemptDeepLink();
+        });
+
+        // Universal Link / App Link 시도 함수
+        function attemptDeepLink() {
+            loading.style.display = 'block';
+            primaryBtn.style.display = 'none';
+
+            // 플랫폼별 링크 결정
+            let targetLink;
+            if (isIOS && UNIVERSAL_LINK) {
+                targetLink = UNIVERSAL_LINK;
+            } else if (isAndroid && APP_LINK) {
+                targetLink = APP_LINK;
+            } else {
+                // 기본값으로 현재 도메인 사용
+                targetLink = APP_LINK;
+            }
+            const startTime = Date.now();
+            const timeout = 2500; // 2.5초 타임아웃
+
+            // 앱이 설치되어 있지 않을 경우 스토어로 리디렉션
+            const timer = setTimeout(() => {
+                redirectToStore();
+            }, timeout);
+
+            // 페이지 포커스 이벤트로 앱 실행 감지
+            const handleVisibilityChange = () => {
+                if (Date.now() - startTime < timeout) {
+                    clearTimeout(timer);
+                    // 앱이 실행된 것으로 간주
+                }
+            };
+
+            document.addEventListener('visibilitychange', handleVisibilityChange);
+            window.addEventListener('blur', handleVisibilityChange);
+
+            // Universal Link / App Link 실행
+            window.location.href = targetLink;
+        }
+
+        // 스토어로 자동 리디렉션
+        function redirectToStore() {
+            if (isIOS && IOS_APP_ID && IOS_APP_ID !== '0') {
+                window.location.href = `https://apps.apple.com/kr/app/peep/id${IOS_APP_ID}`;
+            } else if (isAndroid && ANDROID_PACKAGE) {
+                window.location.href = `https://play.google.com/store/apps/details?id=${ANDROID_PACKAGE}`;
+            } else {
+                // 기본 동작: 로딩 숨기고 버튼 다시 표시
+                loading.style.display = 'none';
+                primaryBtn.style.display = 'inline-block';
+                alert('앱 스토어 정보가 설정되지 않았습니다.');
+            }
+        }
+
+        // 페이지 로드 시 자동으로 Universal Link / App Link 시도
+        window.addEventListener('load', function() {
+            // 약간의 지연을 두어 페이지가 완전히 로드된 후 실행
+            setTimeout(() => {
+                attemptDeepLink();
+            }, 500);
+        });
+    </script>
+</body>
+</html>
