@@ -1,0 +1,9 @@
+[{
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "xyz.alpacapeep.santa",
+      "sha256_cert_fingerprints":
+      ["7E:BE:20:FE:01:CB:37:25:FC:5E:AF:AB:C8:FD:72:8E:1C:23:BB:8C:DB:0D:45:FA:BA:C1:3E:09:77:5F:6D:C0", "3D:3A:D7:86:C1:16:3A:B7:F9:36:C3:B5:29:84:B7:D0:60:CB:1E:EB:5C:8C:C1:89:38:DC:D0:AB:96:FE:C2:ED"]
+    }
+  }]
