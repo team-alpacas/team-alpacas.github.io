@@ -82,13 +82,20 @@
             margin-top: 10px;
             padding-top: 20px;
             border-top: 1px solid #F1FFCE;
+            line-height: 1.6;
+            word-break: keep-all;
         }
+
+        /* 모바일에서만 줄바꿈을 표시하기 위한 클래스 */
+        .mobile-only { display: none; }
 
         @media (max-width: 480px) {
             .container {
                 padding: 30px 20px;
                 margin: 10px;
             }
+
+            .mobile-only { display: inline; }
         }
 
         /* 로딩 애니메이션 */
@@ -119,98 +126,68 @@
         <h1>Peep!</h1>
         <p class="subtitle">선택으로 마음을 전하는 새로운 메신저</p>
         
-        <a href="#" id="primaryBtn" class="download-btn">열기</a>
+        <a href="#" id="primaryBtn" class="download-btn">다운로드 하러 가기</a>
         
         <div class="loading" id="loading">
             <div class="spinner"></div>
-            <p style="margin-top: 10px; color: #666;">앱을 찾고 있습니다...</p>
+            <p style="margin-top: 10px; color: #666;">스토어로 이동 중...</p>
         </div>
         
+        
         <p class="fallback-text">
-            앱이 설치되어 있지 않으면 자동으로 스토어로 이동합니다.
+            잠시 후 스토어로 이동합니다.<br class="mobile-only"> 자동 이동되지 않으면 아래 버튼을 눌러주세요.
         </p>
     </div>
 
     <script>
-        // 딥링크 및 앱 스토어 리디렉션 로직
+        // 스토어 리디렉션 로직
         const primaryBtn = document.getElementById('primaryBtn');
         const loading = document.getElementById('loading');
+
+        // 수동 이동 버튼 핸들러
+        primaryBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            loading.style.display = 'block';
+            redirectToStore();
+        });
 
         // 사용자 디바이스 감지
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
         const isAndroid = /Android/.test(navigator.userAgent);
 
-        // Universal Link / App Link 설정 (실제 앱에 맞게 수정 필요)
-        const UNIVERSAL_LINK = 'https://bridge.alpacapeep.xyz'; // iOS Universal Link
-        const APP_LINK = 'https://link.alpacapeep.xyz'; // Android App Link
-        const IOS_APP_ID = '6742237463';
-        const ANDROID_PACKAGE = 'xyz.alpacapeep.santa';
+        // 스토어 URL
+        const IOS_STORE_URL = 'https://apps.apple.com/kr/app/peep/id6742237463';
+        const ANDROID_STORE_URL = 'https://play.google.com/store/apps/details?id=xyz.alpacapeep.santa';
 
-        // 기본 버튼 클릭 이벤트
-        primaryBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            attemptDeepLink();
-        });
-
-        // Universal Link / App Link 시도 함수
-        function attemptDeepLink() {
-            loading.style.display = 'block';
-            primaryBtn.style.display = 'none';
-
-            // 플랫폼별 링크 결정
-            let targetLink;
-            if (isIOS && UNIVERSAL_LINK) {
-                targetLink = UNIVERSAL_LINK;
-            } else if (isAndroid && APP_LINK) {
-                targetLink = APP_LINK;
-            } else {
-                // 기본값으로 현재 도메인 사용
-                targetLink = APP_LINK;
-            }
-            const startTime = Date.now();
-            const timeout = 2500; // 2.5초 타임아웃
-
-            // 앱이 설치되어 있지 않을 경우 스토어로 리디렉션
-            const timer = setTimeout(() => {
-                redirectToStore();
-            }, timeout);
-
-            // 페이지 포커스 이벤트로 앱 실행 감지
-            const handleVisibilityChange = () => {
-                if (Date.now() - startTime < timeout) {
-                    clearTimeout(timer);
-                    // 앱이 실행된 것으로 간주
-                }
-            };
-
-            document.addEventListener('visibilitychange', handleVisibilityChange);
-            window.addEventListener('blur', handleVisibilityChange);
-
-            // Universal Link / App Link 실행
-            window.location.href = targetLink;
+        function getStoreUrl() {
+            if (isIOS) return IOS_STORE_URL;
+            if (isAndroid) return ANDROID_STORE_URL;
+            // 데스크탑/미식별 환경: 기본값으로 App Store 페이지로 이동
+            return IOS_STORE_URL;
         }
 
-        // 스토어로 자동 리디렉션
         function redirectToStore() {
-            if (isIOS && IOS_APP_ID && IOS_APP_ID !== '0') {
-                window.location.href = `https://apps.apple.com/kr/app/peep/id${IOS_APP_ID}`;
-            } else if (isAndroid && ANDROID_PACKAGE) {
-                window.location.href = `https://play.google.com/store/apps/details?id=${ANDROID_PACKAGE}`;
+            const url = getStoreUrl();
+            if (url) {
+                window.location.replace(url);
             } else {
-                // 기본 동작: 로딩 숨기고 버튼 다시 표시
                 loading.style.display = 'none';
                 primaryBtn.style.display = 'inline-block';
-                alert('앱 스토어 정보가 설정되지 않았습니다.');
             }
         }
 
-        // 페이지 로드 시 자동으로 Universal Link / App Link 시도
-        // window.addEventListener('load', function() {
-        //     // 약간의 지연을 두어 페이지가 완전히 로드된 후 실행
-        //     setTimeout(() => {
-        //         attemptDeepLink();
-        //     }, 500);
-        // });
+        window.addEventListener('load', () => {
+            loading.style.display = 'block';
+            const url = getStoreUrl();
+            if (url) {
+                primaryBtn.href = url;
+                // 즉시 자동 이동
+                redirectToStore();
+            } else {
+                loading.style.display = 'none';
+                primaryBtn.style.display = 'inline-block';
+            }
+        });
     </script>
 </body>
 </html>
