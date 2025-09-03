@@ -140,16 +140,9 @@
     </div>
 
     <script>
-        // 스토어 리디렉션 로직
+        // DOM 요소 참조
         const primaryBtn = document.getElementById('primaryBtn');
         const loading = document.getElementById('loading');
-
-        // 수동 이동 버튼 핸들러
-        primaryBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            loading.style.display = 'block';
-            redirectToStore();
-        });
 
         // 사용자 디바이스 감지
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
@@ -159,6 +152,22 @@
         const IOS_STORE_URL = 'https://apps.apple.com/kr/app/peep/id6742237463';
         const ANDROID_STORE_URL = 'https://play.google.com/store/apps/details?id=xyz.alpacapeep.santa';
 
+        // URL에서 accountId 파라미터 추출
+        function getAccountIdFromUrl() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('accountId');
+        }
+
+        // 앱 스킴 URL 생성
+        function getAppSchemeUrl() {
+            const accountId = getAccountIdFromUrl();
+            if (accountId) {
+                return `peep://add-friend?accountId=${accountId}`;
+            }
+            return null;
+        }
+
+        // 스토어 URL 반환
         function getStoreUrl() {
             if (isIOS) return IOS_STORE_URL;
             if (isAndroid) return ANDROID_STORE_URL;
@@ -166,6 +175,26 @@
             return IOS_STORE_URL;
         }
 
+        // 앱 스킴 시도
+        function tryAppScheme() {
+            const appSchemeUrl = getAppSchemeUrl();
+            if (!appSchemeUrl) return false;
+
+            // 앱 스킴 시도
+            const iframe = document.createElement('iframe');
+            iframe.style.display = 'none';
+            iframe.src = appSchemeUrl;
+            document.body.appendChild(iframe);
+            
+            // iframe 제거
+            setTimeout(() => {
+                document.body.removeChild(iframe);
+            }, 1000);
+
+            return true;
+        }
+
+        // 스토어로 리디렉션
         function redirectToStore() {
             const url = getStoreUrl();
             if (url) {
@@ -176,13 +205,38 @@
             }
         }
 
-        window.addEventListener('load', () => {
+        // 앱 열기 시도 후 스토어로 이동
+        function attemptAppOpenThenStore() {
             loading.style.display = 'block';
+            
+            const appSchemeAttempted = tryAppScheme();
+            
+            if (appSchemeAttempted) {
+                // 앱 스킴 시도 후 2초 대기 후 스토어로 이동
+                // 만약 앱이 설치되어 있다면 앱이 열리고 브라우저가 백그라운드로 가므로
+                // 타이머가 실행되지 않거나 사용자가 다시 브라우저로 돌아왔을 때 실행됨
+                setTimeout(() => {
+                    redirectToStore();
+                }, 2000);
+            } else {
+                // accountId가 없는 경우 바로 스토어로 이동
+                redirectToStore();
+            }
+        }
+
+        // 수동 이동 버튼 핸들러
+        primaryBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            attemptAppOpenThenStore();
+        });
+
+        // 페이지 로드 시 자동 실행
+        window.addEventListener('load', () => {
             const url = getStoreUrl();
             if (url) {
                 primaryBtn.href = url;
-                // 즉시 자동 이동
-                redirectToStore();
+                // 즉시 앱 열기 시도 후 스토어 이동
+                attemptAppOpenThenStore();
             } else {
                 loading.style.display = 'none';
                 primaryBtn.style.display = 'inline-block';
