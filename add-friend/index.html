@@ -152,17 +152,17 @@
         const IOS_STORE_URL = 'https://apps.apple.com/kr/app/peep/id6742237463';
         const ANDROID_STORE_URL = 'https://play.google.com/store/apps/details?id=xyz.alpacapeep.santa';
 
-        // URL에서 accountId 파라미터 추출
-        function getAccountIdFromUrl() {
+        // URL에서 code 파라미터 추출
+        function getCodeFromUrl() {
             const urlParams = new URLSearchParams(window.location.search);
-            return urlParams.get('accountId');
+            return urlParams.get('code');
         }
 
         // 앱 스킴 URL 생성
         function getAppSchemeUrl() {
-            const accountId = getAccountIdFromUrl();
-            if (accountId) {
-                return `peep://add-friend?accountId=${accountId}`;
+            const code = getCodeFromUrl();
+            if (code) {
+                return `peep://add-friend?code=${code}`;
             }
             return null;
         }
@@ -219,7 +219,7 @@
                     redirectToStore();
                 }, 3000);
             } else {
-                // accountId가 없는 경우 바로 스토어로 이동
+                // code가 없는 경우 바로 스토어로 이동
                 redirectToStore();
             }
         }
