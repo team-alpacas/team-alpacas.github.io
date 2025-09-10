@@ -155,14 +155,14 @@
         // URL에서 code 파라미터 추출
         function getCodeFromUrl() {
             const urlParams = new URLSearchParams(window.location.search);
-            return urlParams.get('code');
+            return urlParams.get('ic');
         }
 
         // 앱 스킴 URL 생성
         function getAppSchemeUrl() {
             const code = getCodeFromUrl();
             if (code) {
-                return `peep://add-friend?code=${code}`;
+                return `peep://invite?ic=${code}`;
             }
             return null;
         }
