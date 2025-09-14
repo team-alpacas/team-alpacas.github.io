@@ -196,6 +196,10 @@
 
         // 스토어로 리디렉션
         function redirectToStore() {
+            if (document.visibilityState !== 'visible') {
+                return;
+            }
+            
             const url = getStoreUrl();
             if (url) {
                 window.location.replace(url);
